@@ -38,6 +38,7 @@ public class SMSAutoRead extends CordovaPlugin {
         this.plugin = this;
         switch (action) {
             case "start":
+                System.out.println("This is start::::");
                 this.start();
                 return true;
             case "startWatching":
@@ -52,29 +53,43 @@ public class SMSAutoRead extends CordovaPlugin {
 
     private void start() {
         if (smsBroadcastReceiver == null) {
+            System.out.println("Broadcast receiver null:::::");
             smsBroadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     if (intent.getAction().equals(SmsRetriever.SMS_RETRIEVED_ACTION)) {
+                        System.out.println("Equals sms retriever:::::");
                         Bundle extras = intent.getExtras();
 
                         Status smsRetrieverStatus = (Status) extras.get(SmsRetriever.EXTRA_STATUS);
+                        System.out.println("Received plugin feed:::::"+ smsRetrieverStatus);
 
                         switch (smsRetrieverStatus.getStatusCode()) {
                             case CommonStatusCodes.SUCCESS:
-                                Intent messageIntent = extras.getParcelable(SmsRetriever.EXTRA_CONSENT_INTENT);
-                                cordova.startActivityForResult(plugin, messageIntent, REQ_USER_CONSENT);
+                                System.out.println("THIS is success:::::");
+                                try{
+                                    if (cordova.getActivity().getPackageName().equals("com.example.smsauto")) {
+                                        System.out.println("INtent gettttttt::::::"+intent);
+                                        Intent messageIntent = extras.getParcelable(SmsRetriever.EXTRA_CONSENT_INTENT);
+                                        System.out.println("INtent  extraaaaazzzz gettttttt::::::"+messageIntent);
+                                        cordova.getActivity().startActivity(messageIntent);
+                                    }
+                                } catch (Exception e) {
+                                    System.out.println("Something went wrong::::::."+e);
+                                }
                                 break;
                             case CommonStatusCodes.TIMEOUT:
                                 break;
                         }
                     }
+                    System.out.println("Not equals:::::");
                 }
             };
 
             IntentFilter intentFilter = new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION);
             cordova.getActivity().getApplicationContext().registerReceiver(smsBroadcastReceiver, intentFilter);
         }
+        System.out.println("Not null:::::");
     }
 
     private void startWatching() {
